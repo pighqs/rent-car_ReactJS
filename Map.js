@@ -127,8 +127,8 @@ export default class Map extends React.Component {
               <MapView.Marker
               key="my loc"
               coordinate={this.state.location.coords}
-              title="im here"
-              pinColor={'navy'}
+              title="je suis là tralala"
+              pinColor={'navy'} // couleur marker
             />
           }
         </MapView>
