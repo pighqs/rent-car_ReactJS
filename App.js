@@ -1,105 +1,76 @@
 import React from "react";
+import Expo from "expo";
+import { Ionicons } from "@expo/vector-icons";
+
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput } from "react-native";
 
 import { combineReducers, createStore } from "redux";
 
 
 import { reducer as formReducer } from "redux-form";
-import { reduxForm, Field } from 'redux-form';
 
 import { Provider } from "react-redux";
+
+import { TabNavigator } from "react-navigation";
+
+import Home from "./Home";
+import Map from "./Map";
+
 
 const allReducers = combineReducers({ form: formReducer });
 var store = createStore(allReducers);
 
-// composant input texte généré ici :
-function MyTextInput(props) {
-  return (
-    <View>
-      <TextInput
-      onChangeText={props.input.onChange}
-      value={props.input.value}
-      style={{textAlign: "center", padding:10, height: 50, backgroundColor: 'ghostwhite'}}
-      />
-    </View>
-  );
-}
 
-// composant form généré ici :
-function MyForm(props) {
-  return (
-    <ScrollView keyboardShouldPersistTaps={"handled"}>
-      <Text style={{textAlign: "center",paddingTop: 40}} >Car Model</Text>
-      <Field 
-        name="model" 
-        component={MyTextInput}
-        
-      />
-      <Text style={{textAlign: "center",paddingTop: 20}} >Car Brand</Text>
-      <Field 
-        name="brand" 
-        component={MyTextInput}
-      />
 
-      <Text style={{textAlign: "center",paddingTop: 20}} >City</Text>
-      <Field 
-        name="city" 
-        component={MyTextInput}
-      />
-      <Text style={{textAlign: "center",paddingTop: 20}} >number of Seats</Text>
-      <Field 
-        name="seats" 
-        component={MyTextInput}
-      />
-
-      <TouchableOpacity onPress={props.handleSubmit}>
-        <Text style={{textAlign: "center", marginTop: 20, padding: 10, backgroundColor: "gold"}}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-}
-
-// connection formulaire au reduxForm :
-var MyFormRedux = reduxForm({
-  form: 'signIn'
-})(MyForm);
-
-export default class App extends React.Component {
-  onSubmit(datas) {
-    var formData = new FormData();
-    formData.append("model", datas.model);
-    formData.append("brand", datas.brand);
-    formData.append("city", datas.city);
-    formData.append("seats", datas.seats);
-    console.log(datas);
-    fetch("https://hidden-river-17566.herokuapp.com/savecar?",
-  {
-    method: "post",
-    body: formData
-  })
+////// ROUTES TABNAVIGATOR 
+const RootTabs = TabNavigator({
+  
+    ////// routes ////
+  
+    Home: {
+      screen: Home,
+      navigationOptions: {
+        tabBarLabel: "Home",
+        tabBarIcon: ({ tintColor, focused }) => (
+          <Ionicons
+            name={focused ? "ios-home" : "ios-home-outline"}
+            size={26}
+            style={{ color: tintColor }}
+          />
+        )
+      }
+    },
+  
+    Map: {
+      screen: Map,
+      navigationOptions: {
+        tabBarLabel: "Map",
+        tabBarIcon: ({ tintColor, focused }) => (
+          <Ionicons
+            name={focused ? "ios-map" : "ios-map-outline"}
+            size={26}
+            style={{ color: tintColor }}
+          />
+        )
+      }
+    },
+  
+  
+  
+  });
+  
+  
+  class App extends React.Component {
+  
+    render() {
+      return (
+        <Provider store={store}>
+          <RootTabs />
+        </Provider>
+      )
+    }
   }
-  render() {
-    return (
-      <Provider store={store}>
-        <MyFormRedux onSubmit={this.onSubmit} />
-      </Provider>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#eee",
-    alignItems: "center",
-    justifyContent: "center"
-  }
-});
-const inputStyle = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "orange",
-    alignItems: "center",
-    justifyContent: "center"
-  }
-});
+  
+  
+  export default App;
+  
