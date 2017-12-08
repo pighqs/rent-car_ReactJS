@@ -1,8 +1,10 @@
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
-import Marker from 'react-native-maps';
-
 import React from "react";
-import { StyleSheet, View } from "react-native";
+
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import Marker from "react-native-maps";
+
+import { Platform, Text, StyleSheet, View } from "react-native";
+import { Constants, Location, Permissions } from "expo";
 
 export default class Map extends React.Component {
   constructor(props) {
@@ -14,22 +16,29 @@ export default class Map extends React.Component {
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421
       },
-      markers: []
-      
+      markers: [],
+      location: {
+        coords:  {
+          latitude: 48.8649325,
+          longitude: 2.3499496
+        }
+      },
+      errorMessage: null
     };
   }
+
   componentDidMount() {
     // il faut récupérer valeur du this dans une  variable (bind manuel) sinon elle sera perdue lors du fetch
     const ctx = this;
-    
+
 
     fetch(
-    // on se connecte au back hebergé sur heroku pour aller chercher  cars dans DB
+      // on se connecte au back hebergé sur heroku pour aller chercher  cars dans DB
       "https://hidden-river-17566.herokuapp.com/findcars"
     )
       .then(function(response) {
         // Convert to JSON end return esponse
-       return response.json();
+        return response.json();
       })
       .then(function(carsFromBack) {
         // response is now called datasFromWeatherAPI
@@ -37,83 +46,91 @@ export default class Map extends React.Component {
         let myCarMarkers = [];
         let newCarMarker = {};
         for (let index = 0; index < carsFromBack.length; index++) {
-            newCarMarker = {
-                latlng: {latitude: carsFromBack[index].lat,
-                    longitude: carsFromBack[index].lng },
-                title : carsFromBack[index].brand,
-                description : carsFromBack[index].model,
-                key: index
-            };
-            myCarMarkers.push(newCarMarker);              
+          newCarMarker = {
+            latlng: {
+              latitude: carsFromBack[index].lat,
+              longitude: carsFromBack[index].lng
+            },
+            title: carsFromBack[index].brand,
+            description: carsFromBack[index].model,
+            key: index
+          };
+          myCarMarkers.push(newCarMarker);
         }
-        
-        //console.log("myCarMarkers" : );
-        //console.log(myCarMarkers);
-        
+
+        //mise a jour markers via un setState
         ctx.setState({
-            markers: myCarMarkers
+          markers: myCarMarkers
         });
-
-        })
-        
-        
-
-        
-      
-      .catch(function(error) {
-          console.log("erreur : ");
-          console.log(error);
       })
-        //let lon = Math.round(datasFromWeatherAPI.coord.lon);
-        //let lat = Math.round(datasFromWeatherAPI.coord.lat);
+      .catch(function(error) {
+        console.log("erreur : ");
+        console.log(error);
+      });
+  } // fin componentDidMount
 
-        // on utilse la réponse pour faire nouveau fetch et recuperer infos co
-        // fetch(
-        //   "http://api.openweathermap.org/pollution/v1/co/" +
-        //     lat +
-        //     "," +
-        //     lon +
-        //     "/current.json?appid=" +
-        //     weatherApiKey
-        // )
-        //   .then(function(response) {
-        //     return response.json();
-        //   })
-        //   .then(function(result) {
-        //     //console.log(result.data[0].value);
-        //     ctx.setState({
-        //       co: result.data[0].value
-        //     });
-        //     // on met à jour le store avec la valeur retournée pour pouvoir la lire ailleurs
-        //     ctx.props.sendDataCo(result.data[0].value);
-        //   });
+  componentWillMount() {
+    const myThis = this;
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      myThis.setState({
+        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
+      });
+    } else {
+      myThis._getLocationAsync();
+    }
+  }
 
-      }
-  
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
+    }
 
-
+    let mylocation = await Location.getCurrentPositionAsync({});
+    console.log(mylocation);
+    this.setState({ location : mylocation });
+  };
 
   onRegionChange = region => {
     this.setState({ region: region });
   };
 
   render() {
+    let text = 'Waiting..';
+    if (this.state.errorMessage) {
+        text = this.state.errorMessage;
+      } else if (this.state.location) {
+        text = JSON.stringify(this.state.location);
+      }
+
+
     return (
       <View style={styles.container}>
+      <Text style={styles.paragraph}>{text}</Text>
         <MapView
           provider={PROVIDER_GOOGLE}
           region={this.state.region}
           onRegionChange={this.onRegionChange}
           style={styles.map}
         >
-            {this.state.markers.map(marker => (
-                <MapView.Marker
-                    key={marker.key}
-                    coordinate={marker.latlng}
-                    title={marker.title}
-                    description={marker.description}
-                    />
-                ))}
+          {this.state.markers.map(marker => (
+            <MapView.Marker
+              key={marker.key}
+              coordinate={marker.latlng}
+              title={marker.title}
+              description={marker.description}
+            />
+          ))}
+          {
+              <MapView.Marker
+              key="my loc"
+              coordinate={this.state.location.coords}
+              title="im here"
+              pinColor={'navy'}
+            />
+          }
         </MapView>
       </View>
     );
@@ -128,5 +145,10 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject
+  },
+  paragraph: {
+    margin: 24,
+    fontSize: 14,
+    textAlign: 'center',
   }
 });
