@@ -89,7 +89,7 @@ export default class Map extends React.Component {
     }
 
     let mylocation = await Location.getCurrentPositionAsync({});
-    console.log(mylocation);
+    //console.log(mylocation);
     this.setState({ location : mylocation });
   };
 

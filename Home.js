@@ -13,9 +13,8 @@ import { combineReducers, createStore } from "redux";
 import { reducer as formReducer } from "redux-form";
 import { reduxForm, Field } from "redux-form";
 
-import { Provider } from "react-redux";
+import Camera from "./Camera";
 
-import { TabNavigator } from "react-navigation";
 
 // composant input texte généré ici :
 function MyTextInput(props) {
@@ -73,23 +72,45 @@ var MyFormRedux = reduxForm({
 })(MyForm);
 
 export default class Home extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.state = {
+      id: null,
+    };
+  }
+
   onSubmit(datas) {
+    monThis = this;
+    // on prepare un fetch en post avec FormData (formatage de données multipath)
     var formData = new FormData();
     formData.append("model", datas.model);
     formData.append("brand", datas.brand);
     formData.append("city", datas.city);
     formData.append("seats", datas.seats);
-    console.log(datas);
-    fetch("https://hidden-river-17566.herokuapp.com/savecar?", {
+    //console.log(datas);
+    fetch("https://hidden-river-17566.herokuapp.com/savecar", {
       method: "post",
       body: formData
-    });
+    })
+    .then(function(response){
+      return response.json();
+    })
+    .then(function(data){
+      console.log(data._id);
+      monThis.setState({id: data._id});
+    })
   }
   render() {
-    return <MyFormRedux onSubmit={this.onSubmit} />;
+    if (this.state.id === null) {
+      return <View><MyFormRedux onSubmit={this.onSubmit} /></View>;
+    } else {
+      return <Camera id={this.state.id}/>;
+    }
   }
 }
-
+ 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -98,3 +119,5 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   }
 });
+
+

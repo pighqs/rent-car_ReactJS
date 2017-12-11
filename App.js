@@ -17,6 +17,7 @@ import Home from "./Home";
 import Map from "./Map";
 
 
+
 const allReducers = combineReducers({ form: formReducer });
 var store = createStore(allReducers);
 
@@ -53,11 +54,18 @@ const RootTabs = TabNavigator({
           />
         )
       }
-    },
+    }
   
-  
-  
-  });
+  },
+  {
+    tabBarPosition: "bottom",
+    animationEnabled: true,
+    tabBarOptions: {
+      activeTintColor: "white",
+      showIcon: true,
+    }
+  }
+);
   
   
   class App extends React.Component {
