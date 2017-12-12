@@ -5,6 +5,7 @@ import Marker from "react-native-maps";
 
 import { Platform, Text, StyleSheet, View } from "react-native";
 import { Constants, Location, Permissions } from "expo";
+import { List, ListItem } from "react-native-elements";
 
 export default class Map extends React.Component {
   constructor(props) {
@@ -18,7 +19,7 @@ export default class Map extends React.Component {
       },
       markers: [],
       location: {
-        coords:  {
+        coords: {
           latitude: 48.8649325,
           longitude: 2.3499496
         }
@@ -30,7 +31,6 @@ export default class Map extends React.Component {
   componentDidMount() {
     // il faut récupérer valeur du this dans une  variable (bind manuel) sinon elle sera perdue lors du fetch
     const ctx = this;
-
 
     fetch(
       // on se connecte au back hebergé sur heroku pour aller chercher  cars dans DB
@@ -53,8 +53,10 @@ export default class Map extends React.Component {
             },
             title: carsFromBack[index].brand,
             description: carsFromBack[index].model,
-            key: index
+            key: index,
+            unique_id: carsFromBack[index]._id
           };
+          console.log(newCarMarker);
           myCarMarkers.push(newCarMarker);
         }
 
@@ -71,9 +73,10 @@ export default class Map extends React.Component {
 
   componentWillMount() {
     const myThis = this;
-    if (Platform.OS === 'android' && !Constants.isDevice) {
+    if (Platform.OS === "android" && !Constants.isDevice) {
       myThis.setState({
-        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
+        errorMessage:
+          "Oops, this will not work on Sketch in an Android emulator. Try it on your device!"
       });
     } else {
       myThis._getLocationAsync();
@@ -82,15 +85,15 @@ export default class Map extends React.Component {
 
   _getLocationAsync = async () => {
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
+    if (status !== "granted") {
       this.setState({
-        errorMessage: 'Permission to access location was denied',
+        errorMessage: "Permission to access location was denied"
       });
     }
 
     let mylocation = await Location.getCurrentPositionAsync({});
     //console.log(mylocation);
-    this.setState({ location : mylocation });
+    this.setState({ location: mylocation });
   };
 
   onRegionChange = region => {
@@ -98,17 +101,17 @@ export default class Map extends React.Component {
   };
 
   render() {
-    let text = 'Waiting..';
-    if (this.state.errorMessage) {
-        text = this.state.errorMessage;
-      } else if (this.state.location) {
-        text = JSON.stringify(this.state.location);
-      }
 
+    let text = "Waiting..";
+    if (this.state.errorMessage) {
+      text = this.state.errorMessage;
+    } else if (this.state.location) {
+      text = JSON.stringify(this.state.location);
+    }
 
     return (
       <View style={styles.container}>
-      <Text style={styles.paragraph}>{text}</Text>
+        <Text style={styles.paragraph}>{text}</Text>
         <MapView
           provider={PROVIDER_GOOGLE}
           region={this.state.region}
@@ -124,14 +127,26 @@ export default class Map extends React.Component {
             />
           ))}
           {
-              <MapView.Marker
+            <MapView.Marker
               key="my loc"
               coordinate={this.state.location.coords}
               title="je suis là tralala"
-              pinColor={'navy'} // couleur marker
+              pinColor={"navy"} // couleur marker
             />
           }
         </MapView>
+
+        <List containerStyle={{ marginBottom: 20, width:300 }}>
+          {this.state.markers.map((marker, i) => (
+            <ListItem
+              roundAvatar
+              avatar={{ uri: "https://hidden-river-17566.herokuapp.com/"+marker.unique_id+".jpg" }}
+              key={i}
+              title={marker.title + " " + marker.description}
+            />
+          ))}
+        </List>
+
       </View>
     );
   }
@@ -149,6 +164,6 @@ const styles = StyleSheet.create({
   paragraph: {
     margin: 24,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center"
   }
 });

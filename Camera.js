@@ -27,6 +27,7 @@ export default class CameraExample extends React.Component {
         name: this.props.id,
         type: "image/jpeg" // !!! obligatoire
       });
+      console.log(formData);
       fetch("https://hidden-river-17566.herokuapp.com/sendpicture", {
         method: "post",
         body: formData

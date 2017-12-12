@@ -8,6 +8,8 @@ import {
   TextInput
 } from "react-native";
 
+import { FormLabel, FormInput } from 'react-native-elements'
+
 import { combineReducers, createStore } from "redux";
 
 import { reducer as formReducer } from "redux-form";
@@ -38,16 +40,16 @@ function MyTextInput(props) {
 function MyForm(props) {
   return (
     <ScrollView keyboardShouldPersistTaps={"handled"}>
-      <Text style={{ textAlign: "center", paddingTop: 40 }}>Car Model</Text>
+      <FormLabel style={{ textAlign: "center"}}>Car Model</FormLabel>
       <Field name="model" component={MyTextInput} />
-      <Text style={{ textAlign: "center", paddingTop: 20 }}>Car Brand</Text>
+      <FormLabel style={{ textAlign: "center"}}>Car Brand</FormLabel>
       <Field name="brand" component={MyTextInput} />
 
-      <Text style={{ textAlign: "center", paddingTop: 20 }}>Adress</Text>
+      <FormLabel style={{ textAlign: "center"}}>Adress</FormLabel>
       <Field name="city" component={MyTextInput} />
-      <Text style={{ textAlign: "center", paddingTop: 20 }}>
+      <FormLabel style={{ textAlign: "center"}}>
         number of Seats
-      </Text>
+      </FormLabel>
       <Field name="seats" component={MyTextInput} />
 
       <TouchableOpacity onPress={props.handleSubmit}>
